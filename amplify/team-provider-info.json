@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-fuelpass-dev-63331-authRole",
+      "UnauthRoleArn": "arn:aws:iam::885121665536:role/amplify-fuelpass-dev-63331-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::885121665536:role/amplify-fuelpass-dev-63331-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-fuelpass-dev-63331-deployment",
+      "UnauthRoleName": "amplify-fuelpass-dev-63331-unauthRole",
+      "StackName": "amplify-fuelpass-dev-63331",
+      "StackId": "arn:aws:cloudformation:eu-west-1:885121665536:stack/amplify-fuelpass-dev-63331/cde689c0-6ff2-11ed-b26a-0a4a89afcff1",
+      "AmplifyAppId": "d1yg7lwixbvvji"
+    }
+  }
+}
