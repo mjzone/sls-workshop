@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
+import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -33,29 +34,46 @@ export class CdkStack extends cdk.Stack {
     // DefineAuthChallenge lambda
     const defineAuthChallengeLambda = new NodejsFunction(this, 'FADefineAuthChallengeLambda', {
       entry: join(__dirname, `../functions/defineAuthChallenge/handler.js`),
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_14_X,
       handler: "handler"
     });
 
     // CreateAuthChallenge lambda
     const createAuthChallengeLambda = new NodejsFunction(this, 'FACreateAuthChallengeLambda', {
       entry: join(__dirname, `../functions/createAuthChallenge/handler.js`),
-      runtime: Runtime.NODEJS_18_X,
-      handler: "handler"
+      runtime: Runtime.NODEJS_14_X,
+      handler: "handler",
+      bundling: {
+        externalModules: [
+          'aws-sdk'
+        ]
+      }
     });
-    createAuthChallengeLambda
+
+    // Create a permission policy statement
+    const snsPublishPolicy = new PolicyStatement({
+      actions: ['sns:Publish'],
+      resources: ['*'],
+    });
+
+    // Attach the permission policy to the Lambda function role 
+    createAuthChallengeLambda.role?.attachInlinePolicy(
+      new Policy(this, 'sns-publish-policy', {
+        statements: [snsPublishPolicy]
+      })
+    );
 
     // VerifyAuthChallengeResponse lambda
     const verifyAuthChallengeResponseLambda = new NodejsFunction(this, 'FAVerifyAuthChallengeResponseLambda', {
       entry: join(__dirname, `../functions/verifyAuthChallengeResponse/handler.js`),
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_14_X,
       handler: "handler"
     });
 
     // PreSignUp lambda
     const preSignUpLambda = new NodejsFunction(this, 'FAPreSignUpLambda', {
       entry: join(__dirname, `../functions/preSignUp/handler.js`),
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_14_X,
       handler: "handler"
     });
 
@@ -80,6 +98,6 @@ export class CdkStack extends cdk.Stack {
     const userPoolWebClient = userPool.addClient('FAUserPoolWebClient', {
       authFlows: { custom: true }
     });
-    
+
   }
 }
