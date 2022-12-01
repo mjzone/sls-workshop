@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap';
 import { ButtonGroup } from 'react-bootstrap';
 import { InputGroup } from 'react-bootstrap';
 import { FormControl } from 'react-bootstrap';
-import { Auth } from "aws-amplify";
+import { Auth, API } from "aws-amplify";
 
 const NOTSIGNIN = 'You are NOT logged in';
 const SIGNEDIN = 'You have logged in successfully';
@@ -19,6 +19,9 @@ function App() {
   const [otp, setOtp] = useState('');
   const [number, setNumber] = useState('');
   const password = Math.random().toString(10) + 'Abc#';
+  const [userProfile, setUserProfile] = useState({ name: "", nic: "", address: "" });
+  const userAPIName = "UserAPI";
+  const userRootPath = "/users";
 
   useEffect(() => {
     verifyAuth();
@@ -93,6 +96,28 @@ function App() {
       });
   };
 
+  const getPayload = async (data = {}) => {
+    return {
+      body: data,
+      headers: {
+        Authorization: `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}`
+      }
+    };
+  }
+
+  const handleUserFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (!userProfile.name || !userProfile.nic || !userProfile.address) {
+        return;
+      }
+      const payload = await getPayload(userProfile);
+      await API.post(userAPIName, userRootPath, payload);
+    } catch (err) {
+      console.log('error creating user profile:', err);
+    }
+  }
+
   return (
     <div className='App'>
       <header className='App-header'>
@@ -125,6 +150,46 @@ function App() {
               Confirm
             </Button>
           </div>
+        )}
+        {user && (
+          <form className="form-wrapper" onSubmit={handleUserFormSubmit}>
+            <div className="form-fields">
+              <div className="name-form">
+                <p><label htmlFor="name">Name</label></p>
+                <p><input
+                  name="name"
+                  type="name"
+                  placeholder="Your name"
+                  onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
+                  required
+                /></p>
+              </div>
+              <div className="author-form">
+                <p><label htmlFor="nic">NIC</label></p>
+                <p><input
+                  name="nic"
+                  type="text"
+                  placeholder="Your NIC"
+                  onChange={(e) => setUserProfile({ ...userProfile, nic: e.target.value })}
+                  required
+                /></p>
+              </div>
+              <div className="description-form">
+                <p><label htmlFor="description">Address</label></p>
+                <p><textarea
+                  name="address"
+                  type="text"
+                  rows="8"
+                  placeholder="Your address"
+                  onChange={(e) => setUserProfile({ ...userProfile, address: e.target.value })}
+                  required
+                /></p>
+              </div>
+              <div className="submit-form">
+                <button className="btn" type="submit">Save User</button>
+              </div>
+            </div>
+          </form>
         )}
         <div>
           <ButtonGroup>
